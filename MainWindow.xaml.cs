@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private ProcessLauncher _launcher = new();
 
     private static string jsonPath = @"X:\Bezplatformowe\The Binding of Isaac Repentance\items_json.json";
+    private static string injectorPath = @"Y:\VSProjects\IsaacInjector\Debug\IsaacInjector.exe";
 
     //private ProcessInjector _injector = new(); OLD PROCESS INJECTOR
 
@@ -35,19 +36,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        Output("UI started...");
-
         /* OLD PROCESS INJECTOR
         bool ok = _injector.Inject("isaac-ng.exe",
         @"Y:\VSProjects\IsaacEntityHook\Debug\IsaacEntityHook.dll");
         Output(ok ? "DLL injected" : "Injection failed");*/
 
         // 1. start injector EXE
-        bool ok = _launcher.Launch(
-            @"Y:\VSProjects\IsaacInjector\Debug\IsaacInjector.exe"
-        );
-
-        Output(ok ? "Injector EXE launched" : "Failed to launch injector");
+        bool ok = _launcher.Launch(injectorPath);
 
         // 2. wait for DLL / shared memory (na razie brute-force)
         System.Threading.Thread.Sleep(10000);
@@ -60,7 +55,9 @@ public partial class MainWindow : Window
         _db = new ItemDatabase(jsonPath);
 
         // 5. UI manager (format + output)
-        _ui = new UIManager(Output, _db);
+        _ui = new UIManager(_db, BodyPanel, MainScrollViewer);
+        AllButton.Click += (_, __) => _ui.SetMode(ViewMode.All);
+        CurrentButton.Click += (_, __) => _ui.SetMode(ViewMode.Current);
 
         // 6. tracker (core logic)
         _tracker = new PickupTracker();
@@ -78,11 +75,5 @@ public partial class MainWindow : Window
         var entities = _shm.ReadAll();
 
         _tracker.Update(entities);
-    }
-
-    public void Output(string text)
-    {
-        OutputBox.AppendText(text + "\n");
-        OutputBox.ScrollToEnd();
     }
 }

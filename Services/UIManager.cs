@@ -1,29 +1,49 @@
-﻿using System;
+﻿using IsaacEntityScannerRE.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using static IsaacEntityScannerRE.Services.PickupTracker;
 
 namespace IsaacEntityScannerRE.Services;
 
+public enum ViewMode
+{
+    All,
+    Current
+}
+
 public class UIManager
 {
-    private readonly Action<string> _output;
     private readonly ItemDatabase _db;
+    public Action<string> Output { get; set; }
+    private readonly StackPanel _rootPanel;
+    private readonly ScrollViewer _scroll;
+    private ViewMode _mode = ViewMode.Current;
 
-    public UIManager(Action<string> output, ItemDatabase db)
+    public UIManager(ItemDatabase db, StackPanel rootPanel, ScrollViewer scroll)
     {
-        _output = output;
         _db = db;
+        _rootPanel = rootPanel;
+        _scroll = scroll;
     }
 
     public void OnPickupUpdated(PickupUpdate update)
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine("=== PICKUP UPDATE ===");
+        sb.AppendLine($"=== PICKUP UPDATE ({_mode}) ===");
 
-        foreach (var key in update.Added)
+        IEnumerable<PickupKey> source = _mode == ViewMode.Current
+            ? update.Current
+            : update.All;
+
+        _rootPanel.Children.Clear();
+
+        foreach (var key in source)
         {
             var items = _db.GetItems(key.Id, key.Variant);
 
@@ -32,11 +52,27 @@ public class UIManager
 
             foreach (var item in items)
             {
-                sb.AppendLine(FormatItem(item));
+                var control = new ItemControl();
+
+                control.SetData(
+                    FormatItem(item),
+                    item.Id,
+                    key.Variant
+                );
+
+                //control.OnRemoveClicked += OnRemove;
+                //control.OnAddClicked += OnAdd;
+                //control.OnMoveClicked += OnMove;
+
+                _rootPanel.Children.Add(control);
+                Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    _scroll.ScrollToEnd();
+                });
             }
         }
 
-        _output(sb.ToString());
+        Output?.Invoke(sb.ToString());
     }
 
     private string FormatItem(Item item)
@@ -72,5 +108,10 @@ public class UIManager
         sb.AppendLine("================================");
 
         return sb.ToString();
+    }
+
+    public void SetMode(ViewMode mode)
+    {
+        _mode = mode;
     }
 }

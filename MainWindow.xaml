@@ -5,14 +5,55 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IsaacEntityScannerRE"
         mc:Ignorable="d"
-        Title="Entity Scanner" Height="600" Width="900">
+        Title="Entity Scanner"
+        Height="600"
+        Width="900">
+
     <Grid>
-        <TextBox x:Name="OutputBox"
-                 FontFamily="Consolas"
-                 FontSize="14"
-                 IsReadOnly="True"
-                 VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto"
-                 TextWrapping="NoWrap"/>
+
+        <Grid.RowDefinitions>
+            <!-- TOP BAR (ok. 1/8 wysokości) -->
+            <RowDefinition Height="*" />
+
+            <!-- BODY (reszta) -->
+            <RowDefinition Height="7*" />
+        </Grid.RowDefinitions>
+
+        <!-- ================= TOP BAR ================= -->
+        <Grid Grid.Row="0" Background="#1E1E1E">
+
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <Button x:Name="AllButton"
+            Grid.Column="0"
+            Content="ALL"
+            Margin="20"/>
+
+    <Button x:Name="CurrentButton"
+            Grid.Column="1"
+            Content="CURRENT"
+            Margin="20"/>
+
+    <Button Grid.Column="2"
+            Content="LOG"
+            Margin="20"/>
+
+</Grid>
+
+        <!-- ================= BODY ================= -->
+        <ScrollViewer x:Name="MainScrollViewer"
+                      Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel x:Name="BodyPanel"
+                        Orientation="Vertical"/>
+
+        </ScrollViewer>
+
     </Grid>
 </Window>

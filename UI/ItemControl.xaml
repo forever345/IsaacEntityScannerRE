@@ -1,0 +1,48 @@
+<UserControl x:Class="IsaacEntityScannerRE.UI.ItemControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="Auto"
+             MinHeight="40">
+
+    <Border BorderThickness="1"
+            BorderBrush="#444"
+            Margin="4"
+            Padding="6">
+
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="8*"/>
+          <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEWA STRONA: TEKST -->
+        <TextBlock x:Name="ItemText"
+                   Grid.Column="0"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   FontFamily="Consolas"
+                   FontSize="13"/>
+
+        <!-- PRAWA STRONA: PRZYCISKI -->
+        <StackPanel Grid.Column="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Right">
+
+          <Button x:Name="AddButton"
+                  Content="ADD"
+                  Margin="2"/>
+
+          <Button x:Name="RemoveButton"
+                  Content="REMOVE"
+                  Margin="2"/>
+
+          <Button x:Name="MoveButton"
+                  Content="MOVE"
+                  Margin="2"/>
+        </StackPanel>
+
+      </Grid>
+
+    </Border>
+
+</UserControl>
