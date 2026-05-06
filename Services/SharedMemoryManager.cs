@@ -67,23 +67,21 @@ public class SharedMemoryManager
     }
 
 
-    public void ReadAll(Action<EntityState> onEntity)
+    public List<EntityState> ReadAll()
     {
-        if (!HasNewData())
-            return;
+        var result = new List<EntityState>();
 
-        int max = MaxEntities;
-
-        for (int i = 0; i < max; i++)
+        for (int i = 0; i < MaxEntities; i++)
         {
             var e = ReadEntity(i);
 
-            // optional filter (zero cost early exit idea)
-            if (e.ptr == 0)
+            if (e.ptr == 0 || e.id <= 0)
                 continue;
 
-            onEntity(e);
+            result.Add(e);
         }
+
+        return result;
     }
 
 }

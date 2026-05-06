@@ -20,8 +20,14 @@ namespace IsaacEntityScannerRE;
 public partial class MainWindow : Window
 {
     private SharedMemoryManager _shm;
+    private PickupTracker _tracker;
+    private ItemDatabase _db;
+    private UIManager _ui;
+
     private DispatcherTimer _timer;
     private ProcessLauncher _launcher = new();
+
+    private static string jsonPath = @"X:\Bezplatformowe\The Binding of Isaac Repentance\items_json.json";
 
     //private ProcessInjector _injector = new(); OLD PROCESS INJECTOR
 
@@ -36,32 +42,47 @@ public partial class MainWindow : Window
         @"Y:\VSProjects\IsaacEntityHook\Debug\IsaacEntityHook.dll");
         Output(ok ? "DLL injected" : "Injection failed");*/
 
-        bool ok = _launcher.Launch(@"Y:\VSProjects\IsaacInjector\Debug\IsaacInjector.exe");
+        // 1. start injector EXE
+        bool ok = _launcher.Launch(
+            @"Y:\VSProjects\IsaacInjector\Debug\IsaacInjector.exe"
+        );
 
         Output(ok ? "Injector EXE launched" : "Failed to launch injector");
 
-        Thread.Sleep(10000);
+        // 2. wait for DLL / shared memory (na razie brute-force)
+        System.Threading.Thread.Sleep(10000);
 
+        // 3. init shared memory
         _shm = new SharedMemoryManager();
         _shm.Init();
 
+        // 4. init database
+        _db = new ItemDatabase(jsonPath);
+
+        // 5. UI manager (format + output)
+        _ui = new UIManager(Output, _db);
+
+        // 6. tracker (core logic)
+        _tracker = new PickupTracker();
+        _tracker.OnUpdated += _ui.OnPickupUpdated;
+
+        // 7. main loop
         _timer = new DispatcherTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(200);
         _timer.Tick += Tick;
         _timer.Start();
     }
 
+    private void Tick(object sender, EventArgs e)
+    {
+        var entities = _shm.ReadAll();
+
+        _tracker.Update(entities);
+    }
+
     public void Output(string text)
     {
         OutputBox.AppendText(text + "\n");
         OutputBox.ScrollToEnd();
-    }
-
-    private void Tick(object sender, EventArgs e)
-    {
-        _shm.ReadAll(entity =>
-        {
-            Output($"ptr={entity.ptr} type={entity.type} variant={entity.variant} id={entity.id}");
-        });
     }
 }
