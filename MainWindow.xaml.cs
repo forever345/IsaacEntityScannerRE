@@ -49,7 +49,26 @@ public partial class MainWindow : Window
 
         // 3. init shared memory
         _shm = new SharedMemoryManager();
-        _shm.Init();
+
+        bool connected = false;
+
+        for (int i = 0; i < 20; i++)
+        {
+            if (_shm.TryInit())
+            {
+                connected = true;
+                break;
+            }
+
+            Thread.Sleep(500);
+        }
+
+        if (!connected)
+        {
+            MessageBox.Show("Failed to connect to shared memory.");
+            Close();
+            return;
+        }
 
         // 4. init database
         _db = new ItemDatabase(jsonPath);

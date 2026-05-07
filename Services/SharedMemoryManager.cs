@@ -43,6 +43,21 @@ public class SharedMemoryManager
         _accessor = _mmf.CreateViewAccessor();
     }
 
+    public bool TryInit()
+    {
+        try
+        {
+            _mmf = MemoryMappedFile.OpenExisting(MapName);
+            _accessor = _mmf.CreateViewAccessor();
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /* Old method for read all snapshot structure
     public bool HasNewData()
     {
