@@ -56,8 +56,8 @@ public partial class MainWindow : Window
 
         // 5. UI manager (format + output)
         _ui = new UIManager(_db, BodyPanel, MainScrollViewer);
-        AllButton.Click += (_, __) => _ui.SetMode(ViewMode.All);
-        CurrentButton.Click += (_, __) => _ui.SetMode(ViewMode.Current);
+        Seen_Button.Click += (_, __) => _ui.SetMode(ViewMode.Seen);
+        Recent_Button.Click += (_, __) => _ui.SetMode(ViewMode.Recent);
 
         // 6. tracker (core logic)
         _tracker = new PickupTracker();
@@ -72,7 +72,10 @@ public partial class MainWindow : Window
 
     private void Tick(object sender, EventArgs e)
     {
-        var entities = _shm.ReadAll();
+        if (!_shm.HasNewData())
+            return;
+
+        var entities = _shm.ReadNew();
 
         _tracker.Update(entities);
     }

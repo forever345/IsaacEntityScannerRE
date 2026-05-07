@@ -34,6 +34,7 @@ public class SharedMemoryManager
     private const int MaxEntities = 1024;
 
     private int _lastPublish;
+    private int _lastReadIndex = -1;
 
 
     public void Init()
@@ -42,6 +43,7 @@ public class SharedMemoryManager
         _accessor = _mmf.CreateViewAccessor();
     }
 
+    /* Old method for read all snapshot structure
     public bool HasNewData()
     {
         int pub = _accessor.ReadInt32(PublishIndexOffset);
@@ -51,6 +53,47 @@ public class SharedMemoryManager
 
         _lastPublish = pub;
         return true;
+    }*/
+
+    public bool HasNewData()
+    {
+        int pub = _accessor.ReadInt32(PublishIndexOffset);
+
+        if (pub < 0)
+            return false;
+
+        return pub != _lastReadIndex;
+    }
+
+    public List<EntityState> ReadNew()
+    {
+        var result = new List<EntityState>();
+
+        int publishIndex = _accessor.ReadInt32(PublishIndexOffset);
+
+        if (publishIndex < 0)
+            return result;
+
+        if (_lastReadIndex == publishIndex)
+            return result;
+
+        while (true)
+        {
+            _lastReadIndex++;
+            _lastReadIndex %= MaxEntities;
+
+            var e = ReadEntity(_lastReadIndex);
+
+            if (e.ptr != 0 && e.id > 0)
+            {
+                result.Add(e);
+            }
+
+            if (_lastReadIndex == publishIndex)
+                break;
+        }
+
+        return result;
     }
 
     public EntityState ReadEntity(int index)

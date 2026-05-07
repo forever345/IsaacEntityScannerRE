@@ -28,14 +28,14 @@
         <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
-    <Button x:Name="AllButton"
+    <Button x:Name="Seen_Button"
             Grid.Column="0"
-            Content="ALL"
+            Content="Seen"
             Margin="20"/>
 
-    <Button x:Name="CurrentButton"
+    <Button x:Name="Recent_Button"
             Grid.Column="1"
-            Content="CURRENT"
+            Content="Recent"
             Margin="20"/>
 
     <Button Grid.Column="2"

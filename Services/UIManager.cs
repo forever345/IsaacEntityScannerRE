@@ -12,17 +12,18 @@ namespace IsaacEntityScannerRE.Services;
 
 public enum ViewMode
 {
-    All,
-    Current
+    Seen,
+    Recent
 }
 
 public class UIManager
 {
     private readonly ItemDatabase _db;
+    private PickupUpdate? _lastUpdate;
     public Action<string> Output { get; set; }
     private readonly StackPanel _rootPanel;
     private readonly ScrollViewer _scroll;
-    private ViewMode _mode = ViewMode.Current;
+    private ViewMode _mode = ViewMode.Recent;
 
     public UIManager(ItemDatabase db, StackPanel rootPanel, ScrollViewer scroll)
     {
@@ -33,11 +34,18 @@ public class UIManager
 
     public void OnPickupUpdated(PickupUpdate update)
     {
+        _lastUpdate = update;
+
+        Render(update);
+    }
+
+    private void Render(PickupUpdate update)
+    {
         var sb = new StringBuilder();
 
         sb.AppendLine($"=== PICKUP UPDATE ({_mode}) ===");
 
-        IEnumerable<PickupKey> source = _mode == ViewMode.Current
+        IEnumerable<PickupKey> source = _mode == ViewMode.Recent
             ? update.Recent
             : update.Seen;
 
@@ -65,12 +73,13 @@ public class UIManager
                 //control.OnMoveClicked += OnMove;
 
                 _rootPanel.Children.Add(control);
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    _scroll.ScrollToEnd();
-                });
             }
         }
+
+        Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            _scroll.ScrollToEnd();
+        });
 
         Output?.Invoke(sb.ToString());
     }
@@ -113,5 +122,10 @@ public class UIManager
     public void SetMode(ViewMode mode)
     {
         _mode = mode;
+
+        if (_lastUpdate != null)
+        {
+            Render(_lastUpdate);
+        }
     }
 }
