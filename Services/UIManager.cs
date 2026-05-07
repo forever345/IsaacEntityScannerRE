@@ -38,8 +38,8 @@ public class UIManager
         sb.AppendLine($"=== PICKUP UPDATE ({_mode}) ===");
 
         IEnumerable<PickupKey> source = _mode == ViewMode.Current
-            ? update.Current
-            : update.All;
+            ? update.Recent
+            : update.Seen;
 
         _rootPanel.Children.Clear();
 
