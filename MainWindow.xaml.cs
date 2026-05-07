@@ -36,54 +36,65 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        /* OLD PROCESS INJECTOR
-        bool ok = _injector.Inject("isaac-ng.exe",
-        @"Y:\VSProjects\IsaacEntityHook\Debug\IsaacEntityHook.dll");
-        Output(ok ? "DLL injected" : "Injection failed");*/
+        LaunchInjector();
 
-        // 1. start injector EXE
-        bool ok = _launcher.Launch(injectorPath);
+        if (!InitSharedMemory())
+            return;
 
-        // 2. wait for DLL / shared memory (na razie brute-force)
-        System.Threading.Thread.Sleep(10000);
+        InitDatabase();
+        InitUI();
+        InitTracker();
+        InitTimer();
+    }
 
-        // 3. init shared memory
+    private void LaunchInjector()
+    {
+        _launcher.Launch(injectorPath);
+    }
+
+    private bool InitSharedMemory()
+    {
         _shm = new SharedMemoryManager();
-
-        bool connected = false;
 
         for (int i = 0; i < 20; i++)
         {
             if (_shm.TryInit())
-            {
-                connected = true;
-                break;
-            }
+                return true;
 
             Thread.Sleep(500);
         }
 
-        if (!connected)
-        {
-            MessageBox.Show("Failed to connect to shared memory.");
-            Close();
-            return;
-        }
+        MessageBox.Show("Failed to connect to shared memory.");
 
-        // 4. init database
+        Close();
+
+        return false;
+    }
+
+    private void InitDatabase()
+    {
         _db = new ItemDatabase(jsonPath);
+    }
 
-        // 5. UI manager (format + output)
+    private void InitUI()
+    {
         _ui = new UIManager(_db, BodyPanel, MainScrollViewer);
+
         Seen_Button.Click += (_, __) => _ui.SetMode(ViewMode.Seen);
         Recent_Button.Click += (_, __) => _ui.SetMode(ViewMode.Recent);
+    }
 
-        // 6. tracker (core logic)
+    private void InitTracker()
+    {
         _tracker = new PickupTracker();
-        _tracker.OnUpdated += _ui.OnPickupUpdated;
 
-        // 7. main loop
+        _tracker.OnUpdated += _ui.OnPickupUpdated;
+    }
+
+    private void InitTimer()
+    {
         _timer = new DispatcherTimer();
+
         _timer.Interval = TimeSpan.FromMilliseconds(200);
         _timer.Tick += Tick;
         _timer.Start();
